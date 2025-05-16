@@ -30,10 +30,9 @@ export default function Home() {
     if (username == "admin" && password == "admin") {
       setProcessing(true)
       showSuccess('Login Success')
-      // setTimeout(() => router.push('chat'), 1500)
+      setTimeout(() => router.replace('/chat'), 1500)
       setTimeout(() => clearToast(), 1450)
       setTimeout(() => setProcessing(false), 1400)
-      return;
     }
     else {
       showError('Invalid credentials')
