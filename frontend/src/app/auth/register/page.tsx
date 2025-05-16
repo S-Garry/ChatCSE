@@ -4,14 +4,41 @@
 import { useState } from 'react'
 import styles from '@/app/auth/auth.module.css'
 import Link from 'next/link'
+import { showSuccess, showError, clearToast } from '@/components/ToastMessage'
+import { useRouter } from 'next/navigation'
 
 export default function Home() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [isProcessing, setProcessing] = useState(false)
+  const router = useRouter()
 
   const handleRegister = () => {
     console.log('Register with username: ', username,', password: ', password)
     // 這裡之後會送到 backend
+
+    if (isProcessing) {
+      showError('Still in process')
+      return
+    }
+
+    if (!username || !password) {
+      showError('Username and password are required')
+      return
+    }
+
+    // TODO: get the username from backend
+    if (username == "admin") {
+      showError('Username exists')
+      return;
+    }
+    else {
+      setProcessing(true)
+      showSuccess('Register Success')
+      setTimeout(() => router.push('login'), 1500)
+      setTimeout(() => clearToast(), 1450)
+      setTimeout(() => setProcessing(false), 1400)
+    }
   }
 
   return (
