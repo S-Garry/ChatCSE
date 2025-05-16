@@ -1,0 +1,80 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #fdf8e6;
+}
+
+.card {
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background-color: white;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  text-align: center;
+  color: black;
+}
+
+.label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: normal;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+
+
+.input {
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  outline: none;
+  color: black;
+}
+
+.input:focus {
+  box-shadow: 0 0 0 2px #3b82f6;
+}
+
+
+.button {
+  padding: 0.5rem 1rem;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  width: 100%;
+  background-color: #e9d57f;
+  border-radius: 0.5rem;    /* rounded-lg，圓角半徑 0.5rem */
+}
+
+.button:hover {
+  background-color: #d5c26a;
+}
+
+.textLink {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: lightgrey;
+}
+
+.textLink a {
+  color: #2563eb;
+  text-decoration: underline;
+}
