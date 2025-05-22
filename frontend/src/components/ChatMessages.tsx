@@ -60,9 +60,8 @@ export default function ChatMessages({ initialMessages, onSendMessage }: ChatMes
         {messages.map((msg, i) => (
           <ChatBubble key={i} message={msg} />
         ))}
+        <div ref={messageEndRef} />
       </div>
-
-      <div ref={messageEndRef} />
 
       {/* 下方：輸入欄 */}
       <form onSubmit={handleSend} className="flex gap-2 p-2 border-t mt-2">

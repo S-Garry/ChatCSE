@@ -1,17 +1,3 @@
-// export interface Room {
-//   id: string;
-//   name: string;
-//   lastMessage: string;
-//   time: string;
-// }
-
-// export interface Message {
-//   id: string;
-//   sender: string;
-//   text: string;
-//   timestamp: string;
-// }
-
 import { Room } from "@/types/Room";
 import { Message } from "@/types/Message";
 
@@ -30,3 +16,15 @@ export const mockMessagesByRoom: Record<string, Message[]> = {
 //     { id: "m4", sender: "You", text: "Hi Bob!", timestamp: "09:01" },
 //   ],
 };
+
+export const mockUsersByRoom: Record<string, { id: string; name: string }[]> = {
+  "room-1": [
+    { id: "u1", name: "Alice" },
+    { id: "u2", name: "You" },
+  ],
+  "room-2": [
+    { id: "u3", name: "Bob" },
+    { id: "u2", name: "You" },
+  ],
+};
+
