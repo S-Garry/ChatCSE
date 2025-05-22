@@ -1,9 +1,16 @@
-'use client'
+"use client";
 
-export default function ChatHome() {
-  return (
-    <div className="h-full flex items-center justify-center text-gray-500">
-      <p>Select a chat room to get started</p>
-    </div>
+import { useChat } from "@/components/ChatContext";
+import ChatMessages from "@/components/ChatMessages";
+import { mockMessagesByRoom } from "@/lib/mockData";
+
+export default function ChatPage() {
+  const { selectedRoomId } = useChat();
+  const messages = selectedRoomId ? mockMessagesByRoom[selectedRoomId] ?? [] : [];
+
+  return selectedRoomId ? (
+    <ChatMessages initialMessages={messages} />
+  ) : (
+    <div className="text-gray-500">Select a chat to begin</div>
   );
 }
