@@ -3,9 +3,9 @@
 import { useState } from "react";
 import clsx from "clsx";
 import { v4 as uuidv4 } from "uuid";
-import { mockRooms } from "@/lib/mockData";
+import { mockRooms, generateRandomString } from "@/lib/mockData";
 import { useChat } from "./ChatContext";
-import { showError } from "./ToastMessage";
+import { showSuccess, showError } from "./ToastMessage";
 
 export default function RoomManager() {
   const [mode, setMode] = useState<"create" | "join">("create");
@@ -14,9 +14,13 @@ export default function RoomManager() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
+
 
     if (mode === "create") {
+      if (!input.trim()) {
+        showError("Room name can't be empty.")
+        return;
+      }
       const newId = uuidv4().slice(0, 8);
       const newRoom = {
         id: newId,
@@ -27,12 +31,19 @@ export default function RoomManager() {
           minute: "2-digit",
           hour12: false,
         }),
+        inviteCode: generateRandomString(),
       };
       mockRooms.push(newRoom);
+      showSuccess("Successfully create the chat room.")
       setSelectedRoomId(newId);
     } else {
-      const existing = mockRooms.find((r) => r.id === input.trim());
+      if (!input.trim()) {
+        showError("Invite Code can't be empty.")
+        return;
+      }
+      const existing = mockRooms.find((r) => r.inviteCode === input.trim());
       if (existing) {
+        showSuccess("Successfully join the chat room.")
         setSelectedRoomId(existing.id);
       } else {
         showError("Room ID not found.");
@@ -49,7 +60,7 @@ export default function RoomManager() {
           onClick={() => setMode("create")}
           className={clsx(
             "px-3 py-1 rounded text-sm",
-            mode === "create" ? "bg-blue-500 text-white" : "bg-gray-200"
+            mode === "create" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-400"
           )}
         >
           Create
@@ -58,7 +69,7 @@ export default function RoomManager() {
           onClick={() => setMode("join")}
           className={clsx(
             "px-3 py-1 rounded text-sm",
-            mode === "join" ? "bg-blue-500 text-white" : "bg-gray-200"
+            mode === "join" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-400"
           )}
         >
           Join

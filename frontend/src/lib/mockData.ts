@@ -1,9 +1,17 @@
 import { Room } from "@/types/Room";
 import { Message } from "@/types/Message";
 
+export const emptyRoom: Room = {
+  id: "empty",
+  name: "Error",
+  lastMessage: "",
+  time: "00:00",
+  inviteCode: "000000"
+};
+
 export const mockRooms: Room[] = [
-  { id: "room-1", name: "Alice", lastMessage: "See you!", time: "10:01" },
-  { id: "room-2", name: "Project X", lastMessage: "Bye!", time: "09:01" },
+  { id: "room-1", name: "Alice", lastMessage: "See you!", time: "10:01", inviteCode: "a3D78g" },
+  { id: "room-2", name: "Project X", lastMessage: "Bye!", time: "09:01", inviteCode: "79DfgL" },
 ];
 
 export const mockMessagesByRoom: Record<string, Message[]> = {
@@ -28,3 +36,14 @@ export const mockUsersByRoom: Record<string, { id: string; name: string }[]> = {
   ],
 };
 
+export function generateRandomString() {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let randomString = '';
+  
+  for (let i = 0; i < 6; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    randomString += characters[randomIndex];
+  }
+
+  return randomString;
+}

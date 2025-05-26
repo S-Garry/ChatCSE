@@ -22,7 +22,7 @@ export default function ChatPage() {
 
       {/* 聊天資訊區 */}
       <div className="w-1/4 border-l border-gray-200 p-4 bg-white">
-        <ChatInfo roomName={currentRoom?.name ?? "Unknown"} users={users} />
+        <ChatInfo room={currentRoom} users={users} />
       </div>
     </div>
   ) : (

@@ -1,17 +1,21 @@
 "use client";
 
 import { User } from "@/types/User";
+import { Room } from "@/types/Room";
 
 interface ChatInfoProps {
-  roomName: string;
+  room?: Room;
   users: User[];
 }
 
-export default function ChatInfo({ roomName, users }: ChatInfoProps) {
+export default function ChatInfo({ room, users }: ChatInfoProps) {
+  const roomName = room?.name ?? "Unknown";
+  const inviteCode = room?.inviteCode ?? "000000";
   return (
     <div className="h-full">
       {/* Chat Room Name */}
       <div className="text-lg font-bold mb-2 text-black">{roomName}</div>
+      <div className="text-sm text-gray-500">Invite Code: {inviteCode}</div> 
 
       {/* Divider */}
       <hr className="mb-4 border-gray-400" />

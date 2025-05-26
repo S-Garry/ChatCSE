@@ -3,4 +3,5 @@ export interface Room {
   name: string;
   lastMessage: string;
   time: string;
+  inviteCode: string;
 }
