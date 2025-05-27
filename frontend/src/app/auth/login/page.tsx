@@ -53,7 +53,12 @@ export default function Home() {
 
     setProcessing(true)
     try {
-      await verifyOtp({ username, otp })
+      const res = await verifyOtp({ username, otp })
+
+      if (res.token) {
+        localStorage.setItem('access_token', res.token)
+      }
+
       showSuccess('Login Success')
       router.replace('/chat')
       clearToast()

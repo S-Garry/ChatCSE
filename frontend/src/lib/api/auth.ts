@@ -82,7 +82,7 @@ export async function register({ email, username, password }: {
 export async function verifyOtp({ username, otp }: {
   username: string;
   otp: string;
-}): Promise<void> {
+}): Promise<{ token?: string }> {
   // ========== mock ==========
   await simulateNetworkDelay(600)
 
@@ -97,6 +97,8 @@ export async function verifyOtp({ username, otp }: {
   }
 
   delete otpMap[username]
+
+  return { token: 'mock-jwt-token-for-' + username }
   // ========== mock ==========
 
 
@@ -110,4 +112,7 @@ export async function verifyOtp({ username, otp }: {
   //   const { message } = await res.json();
   //   throw new Error(message || 'OTP verification failed');
   // }
+
+  // const data = await res.json()
+  // return { token: data.token }
 }
