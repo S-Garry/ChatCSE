@@ -12,8 +12,6 @@ export default function ChatPage() {
   const users = selectedRoomId ? mockUsersByRoom[selectedRoomId] ?? [] : [];
 
   return selectedRoomId ? (
-    // <ChatMessages initialMessages={messages} />
-    
     <div className="flex w-full h-full">
       {/* 聊天訊息區 */}
       <div className="flex-1 p-4 overflow-y-auto">

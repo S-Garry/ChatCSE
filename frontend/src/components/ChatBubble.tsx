@@ -20,10 +20,6 @@ export default function ChatBubble({ message }: { message: Message }) {
         <div className="text-[10px] text-gray-500 mt-1">
           {message.time}
         </div>
-        
-        {/* <div className="font-semibold text-black">{message.sender}</div>
-        <div className="text-black">{message.text}</div>
-        <div className="text-xs text-gray-400">{message.time}</div> */}
       </div>
     </div>
   );
