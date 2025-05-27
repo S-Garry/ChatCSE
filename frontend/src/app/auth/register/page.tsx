@@ -6,6 +6,7 @@ import styles from '@/app/auth/auth.module.css'
 import Link from 'next/link'
 import { showSuccess, showError, clearToast } from '@/components/ToastMessage'
 import { useRouter } from 'next/navigation'
+import { register, verifyOtp } from '@/lib/api/auth'
 
 export default function Home() {
   const [email, setEmail] = useState('')
@@ -16,10 +17,7 @@ export default function Home() {
   const [isOtpPhase, setOtpPhase] = useState(false)
   const router = useRouter()
 
-  const handleRegister = () => {
-    console.log('Register with username: ', username, ', password: ', password)
-    // 這裡之後會送到 backend
-
+  const handleRegister = async () => {
     if (isProcessing) {
       showError('Still in process')
       return
@@ -30,17 +28,20 @@ export default function Home() {
       return
     }
 
-    // TODO: get the username from backend
-    if (username == "admin") {
-      showError('Username exists')
-      return;
-    }
-    else {
+    setProcessing(true)
+    try {
+      await register({ email, username, password})
       setOtpPhase(true)
+    }
+    catch (err: any) {
+      showError(err.message)
+    }
+    finally {
+      setProcessing(false)
     }
   }
 
-  const handleOTP = () => {
+  const handleOTP = async () => {
     if (isProcessing) {
       showError('Still in process')
       return
@@ -51,16 +52,22 @@ export default function Home() {
       return
     }
 
-    if (otp == "12345") {
-      setProcessing(true)
+    setProcessing(true)
+    try {
+      // DISCUSS: username or email?
+      await verifyOtp({username, otp})
       showSuccess('Register Success')
       setTimeout(() => router.push('login'), 1500)
       setTimeout(() => clearToast(), 1450)
-      setTimeout(() => setProcessing(false), 1400)
     }
-    else {
-      showError('Invalid OTP')
-      return;
+    catch (err: any) {
+      showError(err.message)
+      setOtpPhase(false)
+      setOtp('')
+      setPassword('')
+    }
+    finally {
+      setTimeout(() => setProcessing(false), 1400)
     }
   }
 
