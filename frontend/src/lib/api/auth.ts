@@ -11,6 +11,41 @@ const existingEmails = ['admin@example.com', 'test@example.com'];
 // 模擬儲存的 OTP（實際上應該由後端發送）
 const otpMap: Record<string, string> = {};
 
+// 模擬帳號密碼資料
+const mockUsers: Record<string, { password: string; otp: string }> = {
+  admin: { password: 'admin', otp: '12345' },
+  testuser: { password: '123456', otp: '12345' },
+};
+
+export async function login({username, password}: {
+  username: string;
+  password: string;
+}): Promise<void> {
+
+  // ========== mock ==========
+  await simulateNetworkDelay(800);
+
+  const user = mockUsers[username];
+
+  if (!user || user.password !== password) {
+    throw new Error('Invalid credentials');
+  }
+
+  otpMap[username] = user.otp;
+
+  // ========== mock ==========
+
+  // const res = await fetch('/api/login', {
+  //   method: 'POST',
+  //   headers: { 'Content-Type': 'application/json' },
+  //   body: JSON.stringify({ username, password }),
+  // });
+
+  // if (!res.ok) {
+  //   const { message } = await res.json();
+  //   throw new Error(message || 'Registration failed');
+  // }
+}
 
 export async function register({ email, username, password }: {
   email: string;

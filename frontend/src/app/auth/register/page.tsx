@@ -57,8 +57,10 @@ export default function Home() {
       // DISCUSS: username or email?
       await verifyOtp({username, otp})
       showSuccess('Register Success')
-      setTimeout(() => router.push('login'), 1500)
-      setTimeout(() => clearToast(), 1450)
+      router.push('login')
+      clearToast()
+      // setTimeout(() => router.push('login'), 1500)
+      // setTimeout(() => clearToast(), 1450)
     }
     catch (err: any) {
       showError(err.message)
@@ -67,7 +69,8 @@ export default function Home() {
       setPassword('')
     }
     finally {
-      setTimeout(() => setProcessing(false), 1400)
+      setProcessing(false)
+      // setTimeout(() => setProcessing(false), 1400)
     }
   }
 

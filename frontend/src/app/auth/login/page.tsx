@@ -6,6 +6,7 @@ import styles from '@/app/auth/auth.module.css'
 import Link from 'next/link'
 import { showSuccess, showError, clearToast } from '@/components/ToastMessage'
 import { useRouter } from 'next/navigation'
+import { login, verifyOtp } from '@/lib/api/auth'
 
 export default function Home() {
   const [username, setUsername] = useState('')
@@ -15,10 +16,7 @@ export default function Home() {
   const [isOtpPhase, setOtpPhase] = useState(false)
   const router = useRouter()
 
-  const handleLogin = () => {
-    console.log('Logging in with username: ', username, ', password: ', password)
-    // 這裡之後會送到 backend
-
+  const handleLogin = async () => {
     if (isProcessing) {
       showError('Still in process')
       return
@@ -29,17 +27,20 @@ export default function Home() {
       return
     }
 
-    if (username == "admin" && password == "admin") {
-      setOtpPhase(true);
+    setProcessing(true)
+    try {
+      await login({ username, password })
+      setOtpPhase(true)
     }
-    else {
-      showError('Invalid credentials')
-      return;
+    catch (err: any) {
+      showError(err.message)
     }
-
+    finally {
+      setProcessing(false)
+    }
   }
 
-  const handleOTP = () => {
+  const handleOTP = async () => {
     if (isProcessing) {
       showError('Still in process')
       return
@@ -50,16 +51,23 @@ export default function Home() {
       return
     }
 
-    if (otp == "12345") {
-      setProcessing(true)
+    setProcessing(true)
+    try {
+      await verifyOtp({ username, otp })
       showSuccess('Login Success')
-      setTimeout(() => router.replace('/chat'), 1500)
-      setTimeout(() => clearToast(), 1450)
-      setTimeout(() => setProcessing(false), 1400)      
+      router.replace('/chat')
+      clearToast()
+      // setTimeout(() => router.replace('/chat'), 1500)
+      // setTimeout(() => clearToast(), 1450)
     }
-    else {
-      showError('Invalid OTP')
-      return;
+    catch (err: any) {
+      showError(err.message)
+      setOtpPhase(false)
+      setOtp('')
+      setPassword('')
+    }
+    finally {
+      setProcessing(false)
     }
   }
 
