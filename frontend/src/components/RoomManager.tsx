@@ -3,16 +3,17 @@
 import { useState } from "react";
 import clsx from "clsx";
 import { v4 as uuidv4 } from "uuid";
-import { mockRooms, generateRandomString } from "@/lib/mockData";
+// import { mockRooms, generateRandomString } from "@/lib/mockData";
 import { useChat } from "./ChatContext";
 import { showSuccess, showError } from "./ToastMessage";
+import { createRoom, joinRoom } from "@/lib/api/chat";
 
 export default function RoomManager() {
   const [mode, setMode] = useState<"create" | "join">("create");
   const [input, setInput] = useState("");
   const { setSelectedRoomId } = useChat();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
 
@@ -21,32 +22,41 @@ export default function RoomManager() {
         showError("Room name can't be empty.")
         return;
       }
-      const newId = uuidv4().slice(0, 8);
-      const newRoom = {
-        id: newId,
-        name: input,
-        lastMessage: "",
-        time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-        }),
-        inviteCode: generateRandomString(),
-      };
-      mockRooms.push(newRoom);
-      showSuccess("Successfully create the chat room.")
-      setSelectedRoomId(newId);
+      // const newId = uuidv4().slice(0, 8);
+      // const newRoom = {
+      //   id: newId,
+      //   name: input,
+      //   lastMessage: "",
+      //   time: new Date().toLocaleTimeString([], {
+      //     hour: "2-digit",
+      //     minute: "2-digit",
+      //     hour12: false,
+      //   }),
+      //   inviteCode: generateRandomString(),
+      // };
+      // mockRooms.push(newRoom);
+      try {
+        const res = await createRoom(input)
+        showSuccess("Successfully create the chat room.")
+        setSelectedRoomId(res.id);
+      }
+      catch (err: any) {
+        showError(err.message)
+      }
     } else {
       if (!input.trim()) {
         showError("Invite Code can't be empty.")
         return;
       }
-      const existing = mockRooms.find((r) => r.inviteCode === input.trim());
-      if (existing) {
+      try {
+        // const existing = mockRooms.find((r) => r.inviteCode === input.trim());
+        // TODO: check has joined or not
+        const res = await joinRoom(input)
         showSuccess("Successfully join the chat room.")
-        setSelectedRoomId(existing.id);
-      } else {
-        showError("Room ID not found.");
+        setSelectedRoomId(res.id);
+      }
+      catch (err: any) {
+        showError(err.message)
       }
     }
 
