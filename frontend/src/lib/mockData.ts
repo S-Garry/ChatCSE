@@ -25,14 +25,14 @@ export const mockMessagesByRoom: Record<string, Message[]> = {
 //   ],
 };
 
-export const mockUsersByRoom: Record<string, { id: string; name: string }[]> = {
+export const mockUsersByRoom: Record<string, { id: string; name: string; mail: string }[]> = {
   "room-1": [
-    { id: "u1", name: "Alice" },
-    { id: "u2", name: "You" },
+    { id: "u1", name: "Alice", mail: "s" },
+    { id: "u2", name: "You", mail: "s" },
   ],
   "room-2": [
-    { id: "u3", name: "Bob" },
-    { id: "u2", name: "You" },
+    { id: "u3", name: "Bob", mail: "s" },
+    { id: "u2", name: "You", mail: "s" },
   ],
 };
 

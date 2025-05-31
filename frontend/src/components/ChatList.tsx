@@ -5,18 +5,26 @@
 
 import clsx from "clsx";
 import { useChat } from "./ChatContext";
-import { mockRooms } from "@/lib/mockData";
 import RoomManager from "./RoomManager";
+import { useEffect, useState } from "react";
+import { Room } from "@/types/Room";
+import { getRooms } from "@/lib/api/chat";
+import { showError } from "./ToastMessage";
 
 
 export default function ChatList() {
   const { selectedRoomId, setSelectedRoomId } = useChat();
+  const [rooms, setRooms] = useState<Room[]>([]);
+  
+  useEffect(() => {
+    getRooms().then(setRooms).catch((err) => showError(err.message))
+  }, [])
 
   return (
     <div className="flex flex-col h-full space-y-0">
       <div className="overflow-y-auto flex-1">
         <div className="text-black">Chat List</div>
-        {mockRooms.map((room) => (
+        {rooms.map((room) => (
           <div
             key={room.id}
             onClick={() => setSelectedRoomId(room.id)}
