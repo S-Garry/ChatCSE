@@ -4,7 +4,7 @@ import { User } from "@/types/User";
 import { Room } from "@/types/Room";
 
 interface ChatInfoProps {
-  room?: Room;
+  room: Room | null;
   users: User[];
 }
 
