@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           BigInt    @id @default(autoincrement())
+  username     String    @unique
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  publicKey    String?   @map("public_key")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  channels     Channel[] @relation("CreatedChannels")
+  memberships  ChannelMembership[]
+  messages     Message[]
+}
+
+model Channel {
+  id          BigInt     @id @default(autoincrement())
+  name        String
+  isPrivate   Boolean    @default(false) @map("is_private")
+  createdBy   BigInt?    @map("created_by")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  inviteCode  String?    @unique @map("invite_code") // 新增的欄位，唯一但可為空
+
+  creator     User?      @relation("CreatedChannels", fields: [createdBy], references: [id])
+  memberships ChannelMembership[]
+  messages    Message[]
+}
+
+model ChannelMembership {
+  userId    BigInt
+  channelId BigInt
+
+  user     User    @relation(fields: [userId], references: [id])
+  channel  Channel @relation(fields: [channelId], references: [id])
+
+  @@id([userId, channelId])
+}
+
+model Message {
+  id              BigInt   @id @default(autoincrement())
+  channelId       BigInt   @map("channel_id")
+  senderId        BigInt   @map("sender_id")
+  encryptedContent String  @map("encrypted_content")
+  encryptedAesKey  String  @map("encrypted_aes_key")
+  iv               String
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  channel         Channel @relation(fields: [channelId], references: [id])
+  sender          User    @relation(fields: [senderId], references: [id])
+}
