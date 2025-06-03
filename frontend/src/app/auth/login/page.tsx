@@ -57,6 +57,7 @@ export default function Home() {
 
       if (res.token) {
         localStorage.setItem('access_token', res.token)
+        localStorage.setItem('name', username)
       }
 
       showSuccess('Login Success')

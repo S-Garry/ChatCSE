@@ -2,7 +2,7 @@ import { Room } from "@/types/Room";
 import { Message, DecryptedMessage } from "@/types/Message";
 import { User } from "@/types/User";
 import { fetchWithAuth } from "../fetchWithAuth";
-import { mockRooms, mockMessagesByRoom, mockUsersByRoom, generateRandomString } from "../mockData";
+// import { mockRooms, mockMessagesByRoom, mockUsersByRoom, generateRandomString } from "../mockData";
 import { randomBytes, createCipheriv, createDecipheriv, scryptSync } from 'crypto';
 
 const simulateNetworkDelay = (ms: number) =>
@@ -62,7 +62,7 @@ export async function getRooms(): Promise<Room[]> {
  * @param authTag - GCM 模式下的認證標籤
  * @returns 解密後的消息文本
  */
-function aesDecrypt(encryptedText: string, aesKey: Buffer, iv: string, authTag: string): string {
+export function aesDecrypt(encryptedText: string, aesKey: Buffer, iv: string, authTag: string): string {
   try {
     // 將 base64 編碼的 encryptedText、iv 和 authTag 解碼
     const encryptedBuffer = Buffer.from(encryptedText, 'base64');
@@ -239,8 +239,11 @@ export async function sendMessage(roomId: string, text: string): Promise<void> {
     const { encryptedData, iv, authTag } = aesEncrypt(text, aesKey);
     const encryptedAESKey = await encryptAesKeyWithKms(aesKey)
 
+    const username = localStorage.getItem('name');
+
     const payload = {
       roomId,
+      username: username,
       encryptedMessage: encryptedData.toString('base64'),
       iv: iv.toString('base64'),
       authTag: authTag.toString('base64'),
