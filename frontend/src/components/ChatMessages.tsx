@@ -4,8 +4,9 @@
 import { Message } from "@/types/Message";
 import { useState, useEffect, useRef } from "react";
 import ChatBubble from "./ChatBubble";
-import { sendMessage } from "@/lib/api/chat";
+import { sendMessage, getMessages } from "@/lib/api/chat";
 import { showError } from "./ToastMessage";
+import { useLongPolling } from "@/hook/useLongPolling";
 
 interface ChatMessagesProps {
   initialMessages: Message[];
@@ -18,14 +19,49 @@ export default function ChatMessages({ initialMessages, roomId, onMessagesUpdate
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const messageEndRef = useRef<HTMLDivElement | null>(null);
+  const lastMessageCountRef = useRef(0);
 
+  // Long polling for messages
+  const { data: polledMessages, error: pollingError, restart: restartPolling } = useLongPolling<Message[]>({
+    url: `/api/rooms/${encodeURIComponent(roomId)}/messages`,       // TODO: change url to actual url
+    interval: 3000, // 每3秒輪詢一次
+    enabled: !!roomId,
+    dependencies: [roomId], // roomId 變化時重新開始輪詢
+    onSuccess: (newMessages) => {
+      // 只有當消息數量發生變化時才更新
+      if (newMessages.length !== lastMessageCountRef.current) {
+        setMessages(newMessages);
+        lastMessageCountRef.current = newMessages.length;
+        
+        if (onMessagesUpdate) {
+          onMessagesUpdate(newMessages);
+        }
+      }
+    },
+    onError: (err) => {
+      console.error('Message polling error:', err);
+      // 可以選擇是否顯示錯誤提示
+      // showError('Failed to sync messages');
+    }
+  });
+
+  // 初始化消息
   useEffect(() => {
     setMessages(initialMessages);
+    lastMessageCountRef.current = initialMessages.length;
   }, [initialMessages]);
 
+  // 自動滾動到底部
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // 監聽輪詢錯誤
+  useEffect(() => {
+    if (pollingError) {
+      console.error('Long polling error:', pollingError);
+    }
+  }, [pollingError]);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,17 +72,13 @@ export default function ChatMessages({ initialMessages, roomId, onMessagesUpdate
     setSending(true);
 
     try {
-      const newMessage = await sendMessage(roomId, messageText);
-      const updatedMessages = [...messages, newMessage];
-      setMessages(updatedMessages);
+      await sendMessage(roomId, messageText);
       
-      // 通知父组件消息已更新
-      if (onMessagesUpdate) {
-        onMessagesUpdate(updatedMessages);
-      }
+      // 發送成功後立即輪詢新消息
+      restartPolling();
     } catch (err: any) {
       showError(err.message);
-      // 恢复输入内容如果发送失败
+      // 恢復輸入內容如果發送失敗
       setInput(messageText);
     } finally {
       setSending(false);
@@ -63,7 +95,7 @@ export default function ChatMessages({ initialMessages, roomId, onMessagesUpdate
           </div>
         ) : (
           messages.map((msg, i) => (
-            <ChatBubble key={i} message={msg} />
+            <ChatBubble key={`${msg.time}-${i}`} message={msg} />
           ))
         )}
         <div ref={messageEndRef} />

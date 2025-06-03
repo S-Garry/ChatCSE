@@ -8,6 +8,7 @@ interface LongPollingOptions {
   onSuccess?: (data: any) => void;
   onError?: (error: Error) => void;
   enabled?: boolean;
+  dependencies?: any[]; // 依賴項變化時重新開始輪詢
 }
 
 export function useLongPolling<T>({
@@ -16,7 +17,8 @@ export function useLongPolling<T>({
   maxRetries = 3,
   onSuccess,
   onError,
-  enabled = true
+  enabled = true,
+  dependencies = []
 }: LongPollingOptions) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(false);
@@ -25,9 +27,10 @@ export function useLongPolling<T>({
   const abortControllerRef = useRef<AbortController | null>(null);
   const retryCountRef = useRef(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isActiveRef = useRef(false);
 
   const fetchData = useCallback(async () => {
-    if (!enabled) return;
+    if (!enabled || !isActiveRef.current) return;
 
     // 取消前一個請求
     if (abortControllerRef.current) {
@@ -64,8 +67,10 @@ export function useLongPolling<T>({
         onSuccess(result);
       }
 
-      // 設置下一次輪詢
-      timeoutRef.current = setTimeout(fetchData, interval);
+      // 設置下一次輪詢（只有在仍然 active 時）
+      if (isActiveRef.current) {
+        timeoutRef.current = setTimeout(fetchData, interval);
+      }
 
     } catch (err: any) {
       if (err.name === 'AbortError') {
@@ -79,21 +84,25 @@ export function useLongPolling<T>({
         onError(error);
       }
 
-      // 重試邏輯
-      if (retryCountRef.current < maxRetries) {
+      // 重試邏輯（只有在仍然 active 時）
+      if (isActiveRef.current && retryCountRef.current < maxRetries) {
         retryCountRef.current++;
-        timeoutRef.current = setTimeout(fetchData, interval * Math.pow(2, retryCountRef.current - 1));
+        const retryDelay = interval * Math.pow(2, retryCountRef.current - 1);
+        timeoutRef.current = setTimeout(fetchData, retryDelay);
       }
     } finally {
       setLoading(false);
     }
-  }, [url, interval, maxRetries, onSuccess, onError, enabled]);
+  }, [url, interval, maxRetries, onSuccess, onError, enabled, ...dependencies]);
 
   const startPolling = useCallback(() => {
+    isActiveRef.current = true;
+    retryCountRef.current = 0;
     fetchData();
   }, [fetchData]);
 
   const stopPolling = useCallback(() => {
+    isActiveRef.current = false;
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -101,6 +110,13 @@ export function useLongPolling<T>({
       clearTimeout(timeoutRef.current);
     }
   }, []);
+
+  const restart = useCallback(() => {
+    stopPolling();
+    if (enabled) {
+      setTimeout(startPolling, 100); // 短暫延遲後重新開始
+    }
+  }, [enabled, startPolling, stopPolling]);
 
   useEffect(() => {
     if (enabled) {
@@ -112,6 +128,22 @@ export function useLongPolling<T>({
     return () => {
       stopPolling();
     };
+  }, [enabled, startPolling, stopPolling, ...dependencies]);
+
+  // 頁面可見性變化時的處理
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        stopPolling();
+      } else if (enabled) {
+        startPolling();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [enabled, startPolling, stopPolling]);
 
   return {
@@ -120,6 +152,7 @@ export function useLongPolling<T>({
     error,
     startPolling,
     stopPolling,
+    restart,
     refetch: fetchData
   };
 }
