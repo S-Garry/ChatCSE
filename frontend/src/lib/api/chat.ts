@@ -37,25 +37,21 @@ async function handleApiResponse<T>(response: Response): Promise<T> {
 }
 
 export async function getRooms(): Promise<Room[]> {
-  // ================= mock ==================
-  await simulateNetworkDelay(500)
-  return mockRooms
-  // ================= mock ==================
   
-  // try {
-  //   const res = await fetchWithAuth(buildApiUrl("/api/rooms"));
-  //   const rooms = await handleApiResponse<Room[]>(res);
+  try {
+    const res = await fetchWithAuth(buildApiUrl("/api/rooms"));
+    const rooms = await handleApiResponse<Room[]>(res);
     
-  //   // 可選：驗證數據格式
-  //   if (!Array.isArray(rooms)) {
-  //     throw new Error('Invalid rooms data format');
-  //   }
+    // 可選：驗證數據格式
+    if (!Array.isArray(rooms)) {
+      throw new Error('Invalid rooms data format');
+    }
     
-  //   return rooms;
-  // } catch (error) {
-  //   console.error('Failed to fetch rooms:', error);
-  //   throw new Error(error instanceof Error ? error.message : 'Failed to fetch rooms');
-  // }
+    return rooms;
+  } catch (error) {
+    console.error('Failed to fetch rooms:', error);
+    throw new Error(error instanceof Error ? error.message : 'Failed to fetch rooms');
+  }
 }
 
 /**
@@ -88,13 +84,6 @@ function aesDecrypt(encryptedText: string, aesKey: Buffer, iv: string, authTag: 
   }
 }
 export async function getMessages(roomId: string): Promise<DecryptedMessage[]> {
-  // ================= mock ==================
-  // await simulateNetworkDelay(500);
-  // if (!(roomId in mockMessagesByRoom)) {
-  //   throw new Error('Chat room not found');
-  // }
-  // return mockMessagesByRoom[roomId];
-  // ================= mock ==================
   if (!roomId?.trim()) {
     throw new Error('Room ID is required');
   }
@@ -132,66 +121,64 @@ export async function getMessages(roomId: string): Promise<DecryptedMessage[]> {
 }
 
 export async function getUsers(roomId: string): Promise<User[]> {
-  await simulateNetworkDelay(300);
-  return mockUsersByRoom[roomId] ?? [];
-  // if (!roomId?.trim()) {
-  //   throw new Error('Room ID is required');
-  // }
+  if (!roomId?.trim()) {
+    throw new Error('Room ID is required');
+  }
 
-  // try {
-  //   const res = await fetchWithAuth(buildApiUrl(`/api/rooms/${encodeURIComponent(roomId)}/users`));
-  //   const users = await handleApiResponse<User[]>(res);
+  try {
+    const res = await fetchWithAuth(buildApiUrl(`/api/rooms/${encodeURIComponent(roomId)}/users`));
+    const users = await handleApiResponse<User[]>(res);
     
-  //   if (!Array.isArray(users)) {
-  //     throw new Error('Invalid users data format');
-  //   }
+    if (!Array.isArray(users)) {
+      throw new Error('Invalid users data format');
+    }
     
-  //   return users;
-  // } catch (error) {
-  //   console.error(`Failed to fetch users for room ${roomId}:`, error);
-  //   throw new Error(error instanceof Error ? error.message : 'Failed to fetch users');
-  // }
+    return users;
+  } catch (error) {
+    console.error(`Failed to fetch users for room ${roomId}:`, error);
+    throw new Error(error instanceof Error ? error.message : 'Failed to fetch users');
+  }
 }
 
 export async function createRoom(name: string): Promise<Room> {
-  await simulateNetworkDelay(400);
-  const newId = `room-${mockRooms.length + 1}`;
-  const inviteCode = generateRandomString();
-  const newRoom: Room = {
-    id: newId,
-    name,
-    lastMessage: '',
-    time: '00:00',
-    inviteCode,
-  };
-  mockRooms.push(newRoom);
-  mockMessagesByRoom[newId] = [];
-  mockUsersByRoom[newId] = [];
-  return newRoom;
+  // await simulateNetworkDelay(400);
+  // const newId = `room-${mockRooms.length + 1}`;
+  // const inviteCode = generateRandomString();
+  // const newRoom: Room = {
+  //   id: newId,
+  //   name,
+  //   lastMessage: '',
+  //   time: '00:00',
+  //   inviteCode,
+  // };
+  // mockRooms.push(newRoom);
+  // mockMessagesByRoom[newId] = [];
+  // mockUsersByRoom[newId] = [];
+  // return newRoom;
 
-  // if (!name?.trim()) {
-  //   throw new Error('Room name is required');
-  // }
+  if (!name?.trim()) {
+    throw new Error('Room name is required');
+  }
 
-  // try {
-  //   const res = await fetchWithAuth(buildApiUrl("/api/rooms"), {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify({ name: name.trim() }),
-  //   });
+  try {
+    const res = await fetchWithAuth(buildApiUrl("/api/rooms"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: name.trim() }),
+    });
     
-  //   const room = await handleApiResponse<Room>(res);
+    const room = await handleApiResponse<Room>(res);
     
-  //   // 驗證返回的房間數據
-  //   if (!room.id || !room.name) {
-  //     throw new Error('Invalid room data received');
-  //   }
+    // 驗證返回的房間數據
+    if (!room.id || !room.name) {
+      throw new Error('Invalid room data received');
+    }
     
-  //   return room;
-  // } catch (error) {
-  //   console.error('Failed to create room:', error);
-  //   throw new Error(error instanceof Error ? error.message : 'Failed to create room');
-  // }
+    return room;
+  } catch (error) {
+    console.error('Failed to create room:', error);
+    throw new Error(error instanceof Error ? error.message : 'Failed to create room');
+  }
 }
 
 export async function joinRoom(inviteCode: string): Promise<Room> {
