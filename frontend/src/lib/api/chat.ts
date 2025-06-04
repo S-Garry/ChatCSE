@@ -1,7 +1,7 @@
 import { Room } from "@/types/Room";
 import { Message, DecryptedMessage } from "@/types/Message";
 import { User } from "@/types/User";
-import { fetchWithAuth } from "../fetchWithAuth";
+// import { fetchWithAuth } from "../fetchWithAuth";
 // import { mockRooms, mockMessagesByRoom, mockUsersByRoom, generateRandomString } from "../mockData";
 import { randomBytes, createCipheriv, createDecipheriv, scryptSync } from 'crypto';
 
@@ -36,10 +36,39 @@ async function handleApiResponse<T>(response: Response): Promise<T> {
   }
 }
 
+async function registerAES(messageID: String, encryptedAES: String) {
+  try {
+    const res = await fetch("localhost:4000/kms/encrypt", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messageID: messageID, encryptedAESKey: encryptedAES }),
+    });
+  } catch (error) {
+    console.error('Failed to fetch rooms:', error);
+    throw new Error(error instanceof Error ? error.message : 'Failed to fetch rooms');
+  }
+}
+
+export async function fetchAES(messageID: String): Promise<String> {
+  try {
+    const res = await fetch("localhost:4000/kms/decrypt", {
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messageID: messageID }),
+    });
+
+    const encryptedAES = await handleApiResponse<String>(res);
+
+    return encryptedAES;
+  } catch (error) {
+    console.error('Failed to fetch rooms:', error);
+    throw new Error(error instanceof Error ? error.message : 'Failed to fetch rooms');
+  }
+}
+
 export async function getRooms(): Promise<Room[]> {
   
   try {
-    const res = await fetchWithAuth(buildApiUrl("/api/rooms"));
+    const res = await fetch(buildApiUrl("/api/rooms"));
     const rooms = await handleApiResponse<Room[]>(res);
     
     // 可選：驗證數據格式
@@ -89,7 +118,7 @@ export async function getMessages(roomId: string): Promise<DecryptedMessage[]> {
   }
 
   try {
-    const res = await fetchWithAuth(buildApiUrl(`/api/rooms/${encodeURIComponent(roomId)}/messages`));
+    const res = await fetch(buildApiUrl(`/api/rooms/${encodeURIComponent(roomId)}/messages`));
     const messages = await handleApiResponse<DecryptedMessage[]>(res);
     
     if (!Array.isArray(messages)) {
@@ -101,7 +130,7 @@ export async function getMessages(roomId: string): Promise<DecryptedMessage[]> {
       const message = messages[i];
       
       // 解密 AES 密鑰
-      const aesKey = await decryptWithKMS(message.encryptedAES);
+      const aesKey = Buffer.from(await fetchAES(message.messageID))
 
       // 解密消息內容
       const decryptedText = aesDecrypt(message.encryptedText, aesKey, message.iv, message.authTag);
@@ -126,7 +155,7 @@ export async function getUsers(roomId: string): Promise<User[]> {
   }
 
   try {
-    const res = await fetchWithAuth(buildApiUrl(`/api/rooms/${encodeURIComponent(roomId)}/users`));
+    const res = await fetch(buildApiUrl(`/api/rooms/${encodeURIComponent(roomId)}/users`));
     const users = await handleApiResponse<User[]>(res);
     
     if (!Array.isArray(users)) {
@@ -141,27 +170,12 @@ export async function getUsers(roomId: string): Promise<User[]> {
 }
 
 export async function createRoom(name: string): Promise<Room> {
-  // await simulateNetworkDelay(400);
-  // const newId = `room-${mockRooms.length + 1}`;
-  // const inviteCode = generateRandomString();
-  // const newRoom: Room = {
-  //   id: newId,
-  //   name,
-  //   lastMessage: '',
-  //   time: '00:00',
-  //   inviteCode,
-  // };
-  // mockRooms.push(newRoom);
-  // mockMessagesByRoom[newId] = [];
-  // mockUsersByRoom[newId] = [];
-  // return newRoom;
-
   if (!name?.trim()) {
     throw new Error('Room name is required');
   }
 
   try {
-    const res = await fetchWithAuth(buildApiUrl("/api/rooms"), {
+    const res = await fetch(buildApiUrl("/api/rooms"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: name.trim() }),
@@ -187,7 +201,7 @@ export async function joinRoom(inviteCode: string): Promise<Room> {
   }
 
   try {
-    const res = await fetchWithAuth(buildApiUrl("/api/rooms/join"), {
+    const res = await fetch(buildApiUrl("/api/rooms/join"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ inviteCode: inviteCode.trim() }),
@@ -220,10 +234,10 @@ const aesEncrypt = (msg: string, aesKey: Buffer): { encryptedData: Buffer, iv: B
 };
 
 // Encrypte AES using KMS
-const encryptAesKeyWithKms = async (aesKey: Buffer): Promise<string> => {
-  const encryptedKey = await encryptWithKMS(aesKey);    // encryptWithKMS need to replace with actual KMS
-  return encryptedKey;
-};
+// const encryptAesKeyWithKms = async (aesKey: Buffer, username: String): Promise<string> => {
+//   const encryptedKey = await encryptWithKMS(aesKey, username);    // encryptWithKMS need to replace with actual KMS
+//   return encryptedKey;
+// };
 
 export async function sendMessage(roomId: string, text: string): Promise<void> {
   if (!roomId?.trim()) {
@@ -237,77 +251,43 @@ export async function sendMessage(roomId: string, text: string): Promise<void> {
   try {
     const aesKey = generateAESKey();
     const { encryptedData, iv, authTag } = aesEncrypt(text, aesKey);
-    const encryptedAESKey = await encryptAesKeyWithKms(aesKey)
+    const uid = localStorage.getItem('uid') ?? "";
+    // const encryptedAESKey = await encryptAesKeyWithKms(aesKey, username)
 
-    const username = localStorage.getItem('name');
 
     const payload = {
-      roomId,
-      username: username,
-      encryptedMessage: encryptedData.toString('base64'),
+      sender: uid,
+      encryptedText: encryptedData.toString('base64'),
       iv: iv.toString('base64'),
-      authTag: authTag.toString('base64'),
-      encryptedAESKey: encryptedAESKey
+      authTag: authTag.toString('base64')
     }
 
-    const res = await fetchWithAuth(buildApiUrl(`/api/rooms/${encodeURIComponent(roomId)}/messages`), {
+    const res = await fetch(buildApiUrl(`/api/rooms/${encodeURIComponent(roomId)}/messages`), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
     
-    const responseData = await handleApiResponse(res)
-    // const message = await handleApiResponse<Message>(res);
-    
-    // // 驗證返回的消息數據
-    // if (!message.sender || !message.text) {
-    //   throw new Error('Invalid message data received');
-    // }
-    
-    // return message;
+    const messageID = await handleApiResponse<String>(res)
+    registerAES(messageID, aesKey.toString())
   } catch (error) {
     console.error(`Failed to send message to room ${roomId}:`, error);
     throw new Error(error instanceof Error ? error.message : 'Failed to send message');
   }
 }
 
-// 可選：添加一些額外的實用函數
+export async function decryptLastMessage(messages: Message[]): Promise<String> {
+  if (messages.length <= 0)
+    return "No messages yet"
+  const encryptedMessage = messages[messages.length - 1]
+  const aesKey = Buffer.from(await fetchAES(encryptedMessage.messageID))
 
-// 獲取房間詳細信息
-export async function getRoomDetails(roomId: string): Promise<Room> {
-  if (!roomId?.trim()) {
-    throw new Error('Room ID is required');
-  }
-
-  try {
-    const res = await fetchWithAuth(buildApiUrl(`/api/rooms/${encodeURIComponent(roomId)}`));
-    const room = await handleApiResponse<Room>(res);
-    
-    if (!room.id || !room.name) {
-      throw new Error('Invalid room data received');
-    }
-    
-    return room;
-  } catch (error) {
-    console.error(`Failed to fetch room details for ${roomId}:`, error);
-    throw new Error(error instanceof Error ? error.message : 'Failed to fetch room details');
-  }
+  const message = aesDecrypt(encryptedMessage.encryptedText, aesKey, encryptedMessage.iv, encryptedMessage.authTag)
+  return message
 }
 
-// 離開房間
-export async function leaveRoom(roomId: string): Promise<void> {
-  if (!roomId?.trim()) {
-    throw new Error('Room ID is required');
-  }
-
-  try {
-    const res = await fetchWithAuth(buildApiUrl(`/api/rooms/${encodeURIComponent(roomId)}/leave`), {
-      method: "POST",
-    });
-    
-    await handleApiResponse<void>(res);
-  } catch (error) {
-    console.error(`Failed to leave room ${roomId}:`, error);
-    throw new Error(error instanceof Error ? error.message : 'Failed to leave room');
-  }
+export function getLastMsgTime(messages: Message[]): String {
+  if (messages.length <= 0)
+    return ""
+  return messages[messages.length - 1].time
 }

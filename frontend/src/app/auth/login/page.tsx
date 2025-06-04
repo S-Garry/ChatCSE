@@ -55,9 +55,9 @@ export default function Home() {
     try {
       const res = await verifyOtp({ username, otp })
 
-      if (res.token) {
-        localStorage.setItem('access_token', res.token)
-        localStorage.setItem('name', username)
+      if (res.uid) {
+        // localStorage.setItem('access_token', res.uid)
+        localStorage.setItem('uid', res.uid)
       }
 
       showSuccess('Login Success')

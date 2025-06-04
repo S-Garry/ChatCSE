@@ -4,7 +4,7 @@
 import { DecryptedMessage, Message } from "@/types/Message";
 import { useState, useEffect, useRef } from "react";
 import ChatBubble from "./ChatBubble";
-import { sendMessage, getMessages, aesDecrypt } from "@/lib/api/chat";
+import { sendMessage, getMessages, aesDecrypt, fetchAES } from "@/lib/api/chat";
 import { showError } from "./ToastMessage";
 import { useLongPolling } from "@/hook/useLongPolling";
 
@@ -27,7 +27,7 @@ export default async function ChatMessages({ initialMessages, roomId, onMessages
     interval: 3000, // 每3秒輪詢一次
     enabled: !!roomId,
     dependencies: [roomId], // roomId 變化時重新開始輪詢
-    onSuccess: async (newMessages: DecryptedMessage[]) => {
+    onSuccess: async (newMessages: Message[]) => {
       // 只有當消息數量發生變化時才更新
       if (newMessages.length !== lastMessageCountRef.current) {
         lastMessageCountRef.current = newMessages.length;
@@ -35,7 +35,7 @@ export default async function ChatMessages({ initialMessages, roomId, onMessages
 
         for (const message of newMessages) {
           try {
-            const aesKey = await decryptWithKMS(message.encryptedAES);
+            const aesKey = Buffer.from(await fetchAES(message.messageID));
             const decryptedText = aesDecrypt(message.encryptedText, aesKey, message.iv, message.authTag);
 
             decryptedMessages.push({

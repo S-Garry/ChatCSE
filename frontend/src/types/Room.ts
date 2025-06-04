@@ -1,7 +1,8 @@
+import { Message } from "./Message";
+
 export interface Room {
   id: string;
   name: string;
-  lastMessage: string;
-  time: string;
   inviteCode: string;
+  messages: Message[];
 }
