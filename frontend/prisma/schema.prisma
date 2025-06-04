@@ -14,6 +14,8 @@ model User {
   passwordHash String    @map("password_hash")
   publicKey    String?   @map("public_key")
   createdAt    DateTime  @default(now()) @map("created_at")
+  otpCode      String?   @map("otp_code")
+  otpExpiresAt DateTime? @map("otp_expires_at")
 
   channels     Channel[] @relation("CreatedChannels")
   memberships  ChannelMembership[]

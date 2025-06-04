@@ -6,7 +6,8 @@ import styles from '@/app/auth/auth.module.css'
 import Link from 'next/link'
 import { showSuccess, showError, clearToast } from '@/components/ToastMessage'
 import { useRouter } from 'next/navigation'
-import { register, verifyOtp } from '@/lib/api/auth'
+import { register } from '@/lib/api/register'
+import { verifyOtp } from '@/lib/api/verifyOtp'
 
 export default function Home() {
   const [email, setEmail] = useState('')
@@ -30,7 +31,17 @@ export default function Home() {
 
     setProcessing(true)
     try {
-      await register({ email, username, password})
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, username, password })
+      })
+
+      if (!res.ok) {
+        const { error } = await res.json()
+        throw new Error(error || 'Registration failed')
+      }
+
       setOtpPhase(true)
     }
     catch (err: any) {
@@ -55,9 +66,26 @@ export default function Home() {
     setProcessing(true)
     try {
       // DISCUSS: username or email?
-      await verifyOtp({username, otp})
+      const res = await fetch('/api/verify-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, otp }),
+      })
+
+      if (!res.ok) {
+        const { error } = await res.json()
+        throw new Error(error || 'OTP verification failed')
+      }
+
+      const data = await res.json()
+
+      if (data.token) {
+        localStorage.setItem('access_token', data.token)
+      }
       showSuccess('Register Success')
-      router.push('login')
+      router.push('/auth/login')
       clearToast()
       // setTimeout(() => router.push('login'), 1500)
       // setTimeout(() => clearToast(), 1450)
