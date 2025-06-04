@@ -118,7 +118,7 @@ export async function getMessages(roomId: string): Promise<DecryptedMessage[]> {
   }
 
   try {
-    const res = await fetch(buildApiUrl(`/api/rooms/${encodeURIComponent(roomId)}/messages`));
+    const res = await fetch(buildApiUrl(`/api/rooms/${roomId}/messages`));
     const messages = await handleApiResponse<DecryptedMessage[]>(res);
     
     if (!Array.isArray(messages)) {
@@ -155,7 +155,7 @@ export async function getUsers(roomId: string): Promise<User[]> {
   }
 
   try {
-    const res = await fetch(buildApiUrl(`/api/rooms/${encodeURIComponent(roomId)}/users`));
+    const res = await fetch(buildApiUrl(`/api/rooms/${roomId}/users`));
     const users = await handleApiResponse<User[]>(res);
     
     if (!Array.isArray(users)) {
@@ -262,7 +262,7 @@ export async function sendMessage(roomId: string, text: string): Promise<void> {
       authTag: authTag.toString('base64')
     }
 
-    const res = await fetch(buildApiUrl(`/api/rooms/${encodeURIComponent(roomId)}/messages`), {
+    const res = await fetch(buildApiUrl(`/api/rooms/${roomId}/messages`), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),

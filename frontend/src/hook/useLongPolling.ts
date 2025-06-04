@@ -11,7 +11,7 @@ interface LongPollingOptions {
   dependencies?: any[]; // 依賴項變化時重新開始輪詢
 }
 
-export async function useLongPolling<T>({
+export function useLongPolling<T>({
   url,
   interval = 5000,
   maxRetries = 3,
@@ -42,15 +42,15 @@ export async function useLongPolling<T>({
     setError(null);
 
     try {
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
+      // const token = localStorage.getItem('access_token');
+      // if (!token) {
+      //   throw new Error('No authentication token found');
+      // }
 
       const response = await fetch(url, {
         signal: abortControllerRef.current.signal,
         headers: {
-          'Authorization': `Bearer ${token}`,
+          // 'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });

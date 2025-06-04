@@ -1,6 +1,6 @@
-import { Message } from "@/types/Message";
+import { DecryptedMessage } from "@/types/Message";
 
-export default function ChatBubble({ message }: { message: Message }) {
+export default function ChatBubble({ message }: { message: DecryptedMessage }) {
   const isSelf = message.sender === "You";
 
   return (
@@ -16,7 +16,7 @@ export default function ChatBubble({ message }: { message: Message }) {
             {message.sender}
           </div>
         )}
-        <div className="text-sm text-black break-words whitespace-pre-wrap">{message.text}</div>
+        <div className="text-sm text-black break-words whitespace-pre-wrap">{message.decryptedText}</div>
         <div className="text-[10px] text-gray-500 mt-1">
           {message.time}
         </div>
