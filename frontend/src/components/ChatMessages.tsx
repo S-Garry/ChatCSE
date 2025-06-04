@@ -1,10 +1,10 @@
 // components/ChatMessages.tsx
 "use client"
 
-import { Message } from "@/types/Message";
+import { DecryptedMessage, Message } from "@/types/Message";
 import { useState, useEffect, useRef } from "react";
 import ChatBubble from "./ChatBubble";
-import { sendMessage, getMessages } from "@/lib/api/chat";
+import { sendMessage, getMessages, aesDecrypt, fetchAES } from "@/lib/api/chat";
 import { showError } from "./ToastMessage";
 import { useLongPolling } from "@/hook/useLongPolling";
 
@@ -14,7 +14,7 @@ interface ChatMessagesProps {
   onMessagesUpdate?: (messages: Message[]) => void;
 }
 
-export default function ChatMessages({ initialMessages, roomId, onMessagesUpdate }: ChatMessagesProps) {
+export default async function ChatMessages({ initialMessages, roomId, onMessagesUpdate }: ChatMessagesProps) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -22,16 +22,32 @@ export default function ChatMessages({ initialMessages, roomId, onMessagesUpdate
   const lastMessageCountRef = useRef(0);
 
   // Long polling for messages
-  const { data: polledMessages, error: pollingError, restart: restartPolling } = useLongPolling<Message[]>({
+  const { data: polledMessages, error: pollingError, restart: restartPolling } = await useLongPolling<Message[]>({
     url: `/api/rooms/${encodeURIComponent(roomId)}/messages`,       // TODO: change url to actual url
     interval: 3000, // 每3秒輪詢一次
     enabled: !!roomId,
     dependencies: [roomId], // roomId 變化時重新開始輪詢
-    onSuccess: (newMessages) => {
+    onSuccess: async (newMessages: Message[]) => {
       // 只有當消息數量發生變化時才更新
       if (newMessages.length !== lastMessageCountRef.current) {
-        setMessages(newMessages);
         lastMessageCountRef.current = newMessages.length;
+        const decryptedMessages: DecryptedMessage[] = [];
+
+        for (const message of newMessages) {
+          try {
+            const aesKey = Buffer.from(await fetchAES(message.messageID));
+            const decryptedText = aesDecrypt(message.encryptedText, aesKey, message.iv, message.authTag);
+
+            decryptedMessages.push({
+              ...message,
+              decryptedText,
+            });
+          } catch (error) {
+            showError('Failed to decrypt message: ' + error);
+          }
+        }
+        
+        setMessages(newMessages);
         
         if (onMessagesUpdate) {
           onMessagesUpdate(newMessages);

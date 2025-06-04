@@ -6,11 +6,11 @@ import { useChat } from "./ChatContext";
 import RoomManager from "./RoomManager";
 import { useEffect, useState } from "react";
 import { Room } from "@/types/Room";
-import { getRooms } from "@/lib/api/chat";
+import { decryptLastMessage, getLastMsgTime, getRooms } from "@/lib/api/chat";
 import { showError } from "./ToastMessage";
 import { useLongPolling } from "@/hook/useLongPolling";
 
-export default function ChatList() {
+export default async function ChatList() {
   const { selectedRoomId, setSelectedRoomId, setSelectedRoom, refreshRooms, setRefreshRooms } = useChat();
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +29,7 @@ export default function ChatList() {
   };
 
   // Long polling for rooms
-  const { data: polledRooms, error: pollingError, restart: restartRoomsPolling } = useLongPolling<Room[]>({
+  const { data: polledRooms, error: pollingError, restart: restartRoomsPolling } = await useLongPolling<Room[]>({
     url: '/api/rooms',
     interval: 5000, // 每5秒輪詢一次房間列表
     enabled: true,
@@ -102,7 +102,7 @@ export default function ChatList() {
         ) : rooms.length === 0 ? (
           <div className="text-gray-500 text-sm">No rooms available</div>
         ) : (
-          rooms.map((room) => (
+          rooms.map(async (room) => (
             <div
               key={room.id}
               onClick={() => handleRoomSelect(room)}
@@ -114,8 +114,8 @@ export default function ChatList() {
               )}
             >
               <div className="font-semibold text-black">{room.name}</div>
-              <div className="text-sm text-gray-500 truncate">{room.lastMessage || "No messages yet"}</div>
-              <div className="text-xs text-gray-400">{room.time}</div>
+              <div className="text-sm text-gray-500 truncate">{await decryptLastMessage(room.messages)}</div>
+              <div className="text-xs text-gray-400">{getLastMsgTime(room.messages)}</div>
             </div>
           ))
         )}

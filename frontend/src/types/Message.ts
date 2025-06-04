@@ -1,7 +1,7 @@
 export interface Message {
+  messageID: string;
   sender: string;
   encryptedText: string;
-  encryptedAES: string;
   iv: string;
   authTag: string;
   time: string;

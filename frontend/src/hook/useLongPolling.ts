@@ -11,7 +11,7 @@ interface LongPollingOptions {
   dependencies?: any[]; // 依賴項變化時重新開始輪詢
 }
 
-export function useLongPolling<T>({
+export async function useLongPolling<T>({
   url,
   interval = 5000,
   maxRetries = 3,
@@ -64,7 +64,7 @@ export function useLongPolling<T>({
       retryCountRef.current = 0; // 重置重試計數
 
       if (onSuccess) {
-        onSuccess(result);
+        await onSuccess(result);
       }
 
       // 設置下一次輪詢（只有在仍然 active 時）

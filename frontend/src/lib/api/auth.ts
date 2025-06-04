@@ -82,7 +82,7 @@ export async function register({ email, username, password }: {
 export async function verifyOtp({ username, otp }: {
   username: string;
   otp: string;
-}): Promise<{ token?: string }> {
+}): Promise<{ uid?: string }> {
   // ========== mock ==========
   await simulateNetworkDelay(600)
 
@@ -98,7 +98,7 @@ export async function verifyOtp({ username, otp }: {
 
   delete otpMap[username]
 
-  return { token: 'mock-jwt-token-for-' + username }
+  return { uid: 'mock-jwt-token-for-' + username }
   // ========== mock ==========
 
 
