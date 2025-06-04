@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-=======
-
->>>>>>> 84c691024dd98e76ad873634b8ab333004a850dd
 // src/app/page.tsx
 'use client'
 
