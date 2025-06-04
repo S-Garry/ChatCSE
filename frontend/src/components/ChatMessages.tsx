@@ -9,21 +9,21 @@ import { showError } from "./ToastMessage";
 import { useLongPolling } from "@/hook/useLongPolling";
 
 interface ChatMessagesProps {
-  initialMessages: Message[];
+  initialMessages: DecryptedMessage[];
   roomId: string;
-  onMessagesUpdate?: (messages: Message[]) => void;
+  onMessagesUpdate?: (messages: DecryptedMessage[]) => void;
 }
 
-export default async function ChatMessages({ initialMessages, roomId, onMessagesUpdate }: ChatMessagesProps) {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+export default function ChatMessages({ initialMessages, roomId, onMessagesUpdate }: ChatMessagesProps) {
+  const [messages, setMessages] = useState<DecryptedMessage[]>(initialMessages);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const messageEndRef = useRef<HTMLDivElement | null>(null);
   const lastMessageCountRef = useRef(0);
 
   // Long polling for messages
-  const { data: polledMessages, error: pollingError, restart: restartPolling } = await useLongPolling<Message[]>({
-    url: `/api/rooms/${encodeURIComponent(roomId)}/messages`,       // TODO: change url to actual url
+  const { data: polledMessages, error: pollingError, restart: restartPolling } = useLongPolling<Message[]>({
+    url: `/api/rooms/${roomId}/messages`,       // TODO: change url to actual url
     interval: 3000, // 每3秒輪詢一次
     enabled: !!roomId,
     dependencies: [roomId], // roomId 變化時重新開始輪詢
@@ -47,10 +47,10 @@ export default async function ChatMessages({ initialMessages, roomId, onMessages
           }
         }
         
-        setMessages(newMessages);
+        setMessages(decryptedMessages);
         
         if (onMessagesUpdate) {
-          onMessagesUpdate(newMessages);
+          onMessagesUpdate(decryptedMessages);
         }
       }
     },

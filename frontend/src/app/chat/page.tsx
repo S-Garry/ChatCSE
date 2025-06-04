@@ -4,21 +4,21 @@ import { useChat } from "@/components/ChatContext";
 import ChatMessages from "@/components/ChatMessages";
 import ChatInfo from "@/components/ChatInfo";
 import { useEffect, useState } from "react";
-import { Message } from "@/types/Message";
+import { DecryptedMessage, Message } from "@/types/Message";
 import { User } from "@/types/User";
 import { getMessages, getUsers } from "@/lib/api/chat";
 import { showError } from "@/components/ToastMessage";
 import { useLongPolling } from "@/hook/useLongPolling";
 
-export default async function ChatPage() {
+export default function ChatPage() {
   const { selectedRoomId, selectedRoom } = useChat();
   
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<DecryptedMessage[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Long polling for users
-  const { data: polledUsers, error: usersPollingError } = await useLongPolling<User[]>({
+  const { data: polledUsers, error: usersPollingError } = useLongPolling<User[]>({
     url: selectedRoomId ? `/api/rooms/${encodeURIComponent(selectedRoomId)}/users` : '',      // TODO: change to actual url
     interval: 10000, // 每10秒輪詢一次用戶列表（用戶變化較少）
     enabled: !!selectedRoomId,
@@ -65,7 +65,7 @@ export default async function ChatPage() {
   }, [selectedRoomId]);
 
   // 處理消息更新
-  const handleMessagesUpdate = (newMessages: Message[]) => {
+  const handleMessagesUpdate = (newMessages: DecryptedMessage[]) => {
     setMessages(newMessages);
   };
 

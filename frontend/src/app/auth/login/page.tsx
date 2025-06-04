@@ -6,8 +6,7 @@ import styles from '@/app/auth/auth.module.css'
 import Link from 'next/link'
 import { showSuccess, showError, clearToast } from '@/components/ToastMessage'
 import { useRouter } from 'next/navigation'
-import { login } from '@/lib/api/login'
-import { verifyOtp } from '@/lib/api/verifyOtp'
+import { loginAPI, verifyOtpAPI } from '@/lib/api/auth'
 
 export default function Home() {
   const [username, setUsername] = useState('')
@@ -30,17 +29,7 @@ export default function Home() {
 
     setProcessing(true)
     try {
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      })
-
-      if (!res.ok) {
-        const { error } = await res.json()
-        throw new Error(error || 'Login failed')
-      }
-
+      await loginAPI({ username, password })
       setOtpPhase(true)
     }
     catch (err: any) {
@@ -64,16 +53,9 @@ export default function Home() {
     console.log('[ handleOTP] username:', username)
     console.log('[ handleOTP] otp:', otp)
 
-
     setProcessing(true)
     try {
-      const res = await fetch('/api/verify-otp', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, otp }),
-      })
+      const res = await verifyOtpAPI({ username, otp })
 
       if (res.uid) {
         // localStorage.setItem('access_token', res.uid)

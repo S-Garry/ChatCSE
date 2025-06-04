@@ -1,4 +1,4 @@
-// src/app/page.tsx
+// src/app/page.tsxAdd commentMore actions
 'use client'
 
 import { useState } from 'react'
@@ -6,8 +6,9 @@ import styles from '@/app/auth/auth.module.css'
 import Link from 'next/link'
 import { showSuccess, showError, clearToast } from '@/components/ToastMessage'
 import { useRouter } from 'next/navigation'
-import { register } from '@/lib/api/register'
-import { verifyOtp } from '@/lib/api/verifyOtp'
+// import { register } from '@/lib/api/register'
+// import { verifyOtp } from '@/lib/api/verifyOtp'
+import { registerAPI, verifyOtpAPI } from '@/lib/api/auth'
 
 export default function Home() {
   const [email, setEmail] = useState('')
@@ -31,16 +32,18 @@ export default function Home() {
 
     setProcessing(true)
     try {
-      const res = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, username, password })
-      })
+      // const res = await fetch('/api/register', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ email, username, password })
+      // })
 
-      if (!res.ok) {
-        const { error } = await res.json()
-        throw new Error(error || 'Registration failed')
-      }
+      // if (!res.ok) {
+      //   const { error } = await res.json()
+      //   throw new Error(error || 'Registration failed')
+      // }
+
+      const res = await registerAPI({ email, username, password});
 
       setOtpPhase(true)
     }
@@ -66,24 +69,24 @@ export default function Home() {
     setProcessing(true)
     try {
       // DISCUSS: username or email?
-      const res = await fetch('/api/verify-otp', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, otp }),
-      })
+      // const res = await fetch('/api/verify-otp', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({ username, otp }),
+      // })
 
-      if (!res.ok) {
-        const { error } = await res.json()
-        throw new Error(error || 'OTP verification failed')
-      }
+      // if (!res.ok) {
+      //   const { error } = await res.json()
+      //   throw new Error(error || 'OTP verification failed')
+      // }
 
-      const data = await res.json()
+      const data = await verifyOtpAPI({ username, otp})
 
-      if (data.token) {
-        localStorage.setItem('access_token', data.token)
-      }
+      // if (data.token) {
+      //   localStorage.setItem('access_token', data.token)
+      // }
       showSuccess('Register Success')
       router.push('/auth/login')
       clearToast()

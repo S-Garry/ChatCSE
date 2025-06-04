@@ -10,7 +10,7 @@ import { decryptLastMessage, getLastMsgTime, getRooms } from "@/lib/api/chat";
 import { showError } from "./ToastMessage";
 import { useLongPolling } from "@/hook/useLongPolling";
 
-export default async function ChatList() {
+export default function ChatList() {
   const { selectedRoomId, setSelectedRoomId, setSelectedRoom, refreshRooms, setRefreshRooms } = useChat();
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +29,7 @@ export default async function ChatList() {
   };
 
   // Long polling for rooms
-  const { data: polledRooms, error: pollingError, restart: restartRoomsPolling } = await useLongPolling<Room[]>({
+  const { data: polledRooms, error: pollingError, restart: restartRoomsPolling } = useLongPolling<Room[]>({
     url: '/api/rooms',
     interval: 5000, // 每5秒輪詢一次房間列表
     enabled: true,
