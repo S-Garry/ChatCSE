@@ -56,6 +56,7 @@ export function useLongPolling<T>({
       });
 
       if (!response.ok) {
+        console.log(await response.json())
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 

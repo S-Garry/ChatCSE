@@ -155,7 +155,7 @@ export async function getUsers(roomId: string): Promise<User[]> {
   }
 
   try {
-    const res = await fetch(buildApiUrl(`/api/channels/${roomId}/users`));
+    const res = await fetch(buildApiUrl(`/api/channels/${roomId}/members`));
     const users = await handleApiResponse<User[]>(res);
     
     if (!Array.isArray(users)) {
@@ -279,8 +279,8 @@ export async function sendMessage(roomId: string, text: string): Promise<void> {
   }
 }
 
-export async function decryptLastMessage(messages: Message[]): Promise<String> {
-  if (messages.length <= 0)
+export async function decryptLastMessage(messages?: Message[]): Promise<String> {
+  if (!messages || messages.length <= 0)
     return "No messages yet"
   const encryptedMessage = messages[messages.length - 1]
   const aesKey = Buffer.from(await fetchAES(encryptedMessage.messageID))
@@ -289,8 +289,8 @@ export async function decryptLastMessage(messages: Message[]): Promise<String> {
   return message
 }
 
-export function getLastMsgTime(messages: Message[]): String {
-  if (messages.length <= 0)
+export function getLastMsgTime(messages?: Message[]): String {
+  if (!messages || messages.length <= 0)
     return ""
   return messages[messages.length - 1].time
 }
