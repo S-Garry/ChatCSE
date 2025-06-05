@@ -21,10 +21,18 @@ export async function GET(req: NextRequest) {
         createdAt: 'desc',
       },
     })
+    const sanitizedChannels = channels.map((channel) => ({
+      ...channel,
+      id: channel.id.toString(),
+      createdBy: channel.createdBy?.toString()
+    }))
 
-    return NextResponse.json(channels)
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch channels' }, { status: 500 })
+    return NextResponse.json(sanitizedChannels)
+
+    
+  } catch (error: any) {
+    // return NextResponse.json({ error: 'Failed to fetch channels' }, { status: 500 })
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
 
