@@ -53,6 +53,7 @@ model Message {
   encryptedAesKey  String  @map("encrypted_aes_key")
   iv               String
   createdAt        DateTime @default(now()) @map("created_at")
+  authTag          String  @map("auth_tag")
 
   channel         Channel @relation(fields: [channelId], references: [id])
   sender          User    @relation(fields: [senderId], references: [id])
