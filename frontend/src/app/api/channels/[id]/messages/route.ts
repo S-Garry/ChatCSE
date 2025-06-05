@@ -1,13 +1,15 @@
 // app/api/channels/[id]/messages/route.ts
+export const runtime = 'nodejs'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
-    const channelId = BigInt(params.id)
+    const channelId = BigInt(context.params.id)
 
     const messages = await prisma.message.findMany({
       where: { channelId },
@@ -23,7 +25,14 @@ export async function GET(
       },
     })
 
-    return NextResponse.json(messages)
+    return NextResponse.json(
+      messages.map((msg) => ({
+        ...msg,
+        id: msg.id.toString(),
+        senderId: msg.senderId.toString(),
+        createdAt: msg.createdAt.toISOString(),
+      }))
+    )
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch messages' }, { status: 500 })
   }
@@ -63,7 +72,10 @@ export async function POST(
       },
     })
 
-    return NextResponse.json({ id: saved.id, createdAt: saved.createdAt })
+    return NextResponse.json({
+      id: saved.id.toString(),
+      createdAt: saved.createdAt.toISOString(),
+    })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to save message' }, { status: 500 })
   }

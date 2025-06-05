@@ -155,7 +155,7 @@ export async function getUsers(roomId: string): Promise<User[]> {
   }
 
   try {
-    const res = await fetch(buildApiUrl(`/api/channels/${roomId}/users`));
+    const res = await fetch(buildApiUrl(`/api/channels/${roomId}/members`));
     const users = await handleApiResponse<User[]>(res);
     
     if (!Array.isArray(users)) {
