@@ -57,12 +57,10 @@ export default function Home() {
     try {
       const res = await verifyOtpAPI({ username, otp })
 
-      localStorage.setItem('username', username)
 
-      // if (res.uid) {
-      //   // localStorage.setItem('access_token', res.uid)
-      //   localStorage.setItem('uid', res.uid)
-      // }
+      if (res.uid) {
+        localStorage.setItem('uid', res.uid)
+      }
 
       showSuccess('Login Success')
       router.replace('/chat')

@@ -175,14 +175,13 @@ export async function createRoom(name: string): Promise<Room> {
   }
 
   try {
-    // const username = localStorage.getItem('username')
+    const uid = localStorage.getItem('uid')
     // console.log('[user]', username)
-    const username = 'user'      // it actually a number, but didn't know how to get uid
 
     const res = await fetch(buildApiUrl("/api/channels"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: name.trim(), createdBy: username }),
+      body: JSON.stringify({ name: name.trim(), createdBy: uid }),
     });
     
     const room = await handleApiResponse<Room>(res);
