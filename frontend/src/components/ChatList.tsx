@@ -30,7 +30,7 @@ export default function ChatList() {
 
   // Long polling for rooms
   const { data: polledRooms, error: pollingError, restart: restartRoomsPolling } = useLongPolling<Room[]>({
-    url: '/api/rooms',
+    url: '/api/channels',
     interval: 5000, // 每5秒輪詢一次房間列表
     enabled: true,
     onSuccess: (newRooms: Room[]) => {

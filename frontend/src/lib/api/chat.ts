@@ -68,7 +68,7 @@ export async function fetchAES(messageID: String): Promise<String> {
 export async function getRooms(): Promise<Room[]> {
   
   try {
-    const res = await fetch(buildApiUrl("/api/rooms"));
+    const res = await fetch(buildApiUrl("/api/channels"));
     const rooms = await handleApiResponse<Room[]>(res);
     
     // 可選：驗證數據格式
@@ -118,7 +118,7 @@ export async function getMessages(roomId: string): Promise<DecryptedMessage[]> {
   }
 
   try {
-    const res = await fetch(buildApiUrl(`/api/rooms/${roomId}/messages`));
+    const res = await fetch(buildApiUrl(`/api/channels/${roomId}/messages`));
     const messages = await handleApiResponse<DecryptedMessage[]>(res);
     
     if (!Array.isArray(messages)) {
@@ -155,7 +155,7 @@ export async function getUsers(roomId: string): Promise<User[]> {
   }
 
   try {
-    const res = await fetch(buildApiUrl(`/api/rooms/${roomId}/users`));
+    const res = await fetch(buildApiUrl(`/api/channels/${roomId}/users`));
     const users = await handleApiResponse<User[]>(res);
     
     if (!Array.isArray(users)) {
@@ -175,10 +175,13 @@ export async function createRoom(name: string): Promise<Room> {
   }
 
   try {
-    const res = await fetch(buildApiUrl("/api/rooms"), {
+    const uid = localStorage.getItem('uid')
+    // console.log('[user]', username)
+
+    const res = await fetch(buildApiUrl("/api/channels"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: name.trim() }),
+      body: JSON.stringify({ name: name.trim(), createdBy: uid }),
     });
     
     const room = await handleApiResponse<Room>(res);
@@ -201,7 +204,7 @@ export async function joinRoom(inviteCode: string): Promise<Room> {
   }
 
   try {
-    const res = await fetch(buildApiUrl("/api/rooms/join"), {
+    const res = await fetch(buildApiUrl("/api/channels/join"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ inviteCode: inviteCode.trim() }),
@@ -262,7 +265,7 @@ export async function sendMessage(roomId: string, text: string): Promise<void> {
       authTag: authTag.toString('base64')
     }
 
-    const res = await fetch(buildApiUrl(`/api/rooms/${roomId}/messages`), {
+    const res = await fetch(buildApiUrl(`/api/channels/${roomId}/messages`), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),

@@ -19,7 +19,7 @@ export default function ChatPage() {
 
   // Long polling for users
   const { data: polledUsers, error: usersPollingError } = useLongPolling<User[]>({
-    url: selectedRoomId ? `/api/rooms/${encodeURIComponent(selectedRoomId)}/users` : '',      // TODO: change to actual url
+    url: selectedRoomId ? `/api/channels/${selectedRoomId}/users` : '',      // TODO: change to actual url
     interval: 10000, // 每10秒輪詢一次用戶列表（用戶變化較少）
     enabled: !!selectedRoomId,
     dependencies: [selectedRoomId],

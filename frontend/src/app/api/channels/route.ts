@@ -32,6 +32,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const { name, createdBy } = await req.json()
+    console.log('[in route.js]', name, createdBy)
 
     if (!name || !createdBy) {
       return NextResponse.json({ error: 'Missing name or createdBy' }, { status: 400 })
@@ -54,7 +55,8 @@ export async function POST(req: NextRequest) {
     })
 
     return NextResponse.json(channel)
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to create channel' }, { status: 500 })
+  } catch (error:any) {
+    // return NextResponse.json({ error: 'Failed to create channel' }, { status: 500 })
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

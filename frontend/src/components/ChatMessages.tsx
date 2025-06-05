@@ -23,7 +23,7 @@ export default function ChatMessages({ initialMessages, roomId, onMessagesUpdate
 
   // Long polling for messages
   const { data: polledMessages, error: pollingError, restart: restartPolling } = useLongPolling<Message[]>({
-    url: `/api/rooms/${roomId}/messages`,       // TODO: change url to actual url
+    url: `/api/channels/${roomId}/messages`,       // TODO: change url to actual url
     interval: 3000, // 每3秒輪詢一次
     enabled: !!roomId,
     dependencies: [roomId], // roomId 變化時重新開始輪詢
